@@ -1,19 +1,24 @@
 package chat;
 
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-
-import java.io.*;
 
 public class Servidor extends Thread {
 	
 	private static Vector clientes;
 	private Socket conexao;
 	private String meuNome;
+	static PrintWriter gravarArq;
 	
 	public Servidor(Socket s){
 		conexao = s;
@@ -21,10 +26,15 @@ public class Servidor extends Thread {
 	
 	public static void main(String[] args) {
 		try {
+			gravarArq = new PrintWriter("log.txt");
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		try {
 			clientes = new Vector();
 			
 			ServerSocket s = new ServerSocket(2000);
-			while (true){
+			while (true) {
 				System.out.print("Esperando conectar...");
 				Socket conexao = s.accept();
 				System.out.println(" Conectou!");
@@ -49,6 +59,7 @@ public class Servidor extends Thread {
 			String linha = entrada.readLine();
 			while ((linha != null) && (!linha.trim().equals(""))){
 				sendToAll(saida," disse: ",linha);
+				recordLog(linha);
 				linha = entrada.readLine();
 			}
 			sendToAll(saida," saiu "," do Chat!");
@@ -61,6 +72,7 @@ public class Servidor extends Thread {
 
 	private void sendToAll(PrintStream saida, String acao, String linha) throws IOException {
 		Enumeration e = clientes.elements();
+		
 		
 		while (e.hasMoreElements()) {
 			PrintStream chat = (PrintStream) e.nextElement();
@@ -77,4 +89,10 @@ public class Servidor extends Thread {
 		}
 		
 	}
+	
+	private void recordLog(String msg) {
+		gravarArq.println("<" + conexao.getInetAddress().getHostName() + ">@<" 
+				+ conexao.getLocalAddress() + ">@<" + conexao.getPort() + ">@<" + msg);
+		gravarArq.flush();
+	};
 }
