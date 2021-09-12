@@ -58,7 +58,7 @@ public class Servidor extends Thread {
 			clientes.add(saida);
 			String linha = entrada.readLine();
 			while ((linha != null) && (!linha.trim().equals(""))){
-				sendToAll(saida," disse: ",linha);
+				sendToAll(saida,": ",linha);
 				recordLog(linha);
 				linha = entrada.readLine();
 			}
@@ -71,23 +71,18 @@ public class Servidor extends Thread {
 	}
 
 	private void sendToAll(PrintStream saida, String acao, String linha) throws IOException {
-		Enumeration e = clientes.elements();
-		
-		
+		@SuppressWarnings("rawtypes")
+		Enumeration e = clientes.elements();		
 		while (e.hasMoreElements()) {
 			PrintStream chat = (PrintStream) e.nextElement();
-			
 			if (chat != saida) {
-				chat.println(meuNome + acao + linha); 
+				chat.println(meuNome + acao + linha);
 			}
-			
 			if (acao.equals(" saiu ")) {
-				if (chat == saida) {
+				if (chat == saida)
 					chat.println("");
-				}
 			}
 		}
-		
 	}
 	
 	private void recordLog(String msg) {
