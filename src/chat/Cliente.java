@@ -73,7 +73,7 @@ public class Cliente extends Thread {
 	        chat = new JTextArea();
 	        JScrollPane scroll = new JScrollPane(chat);
 
-	        // Adiciona o chat e o os bot√µes de a√ß√£o
+	        // Adiciona o chat e o os botıes de aÁ„o
 	        frame.getContentPane().add(scroll, BorderLayout.CENTER);
 	        frame.getContentPane().add(panelPrincipal, BorderLayout.PAGE_END);
 	        frame.setVisible(true);
@@ -81,7 +81,11 @@ public class Cliente extends Thread {
 	        digiteEnviar.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					writeChatFromClient();
+					if(!conectadosCombo.getSelectedItem().toString().equals("")) {
+						writePrivateChatFromClient(conectadosCombo.getSelectedItem().toString());
+					} else {
+						writeChatFromClient();
+					}
 				}
 			});
 		       
@@ -128,6 +132,17 @@ public class Cliente extends Thread {
 		chat.setText(currentChat + newMessage);
 		digiteField.setText("");
 	}
+	
+	public static void writePrivateChatFromClient(String targetName) {
+		String currentChat = chat.getText();
+		String newMessage = digiteField.getText();
+		saida.println("/p\"" + targetName + "\"" + newMessage);
+		newMessage = nome + " sussurou para " + targetName + ": " + newMessage;
+		currentChat = !currentChat.equals("") ? currentChat + "\n" : currentChat; 
+		chat.setText(currentChat + newMessage);
+		digiteField.setText("");
+	}
+	
 	
 	public static void writeChatFromServer(String message) {
 		String currentChat = chat.getText();

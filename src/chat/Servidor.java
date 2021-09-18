@@ -1,21 +1,22 @@
 package chat;
 
 import java.io.BufferedReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Servidor extends Thread {
 	
-	private static Vector clientes;
+	private static Map<String, PrintStream> clientes = new HashMap<String, PrintStream>();
 	private Socket conexao;
 	private String meuNome;
 	static PrintWriter gravarArq;
@@ -30,9 +31,7 @@ public class Servidor extends Thread {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		try {
-			clientes = new Vector();
-			
+		try {			
 			ServerSocket s = new ServerSocket(2000);
 			while (true) {
 				System.out.print("Esperando conectar...");
@@ -55,26 +54,37 @@ public class Servidor extends Thread {
 			if (meuNome == null){
 				return;
 			}
-			clientes.add(saida);
+			clientes.put(meuNome, saida);
 			String linha = entrada.readLine();
 			while ((linha != null) && (!linha.trim().equals(""))){
-				sendToAll(saida,": ",linha);
+				if(linha.startsWith("/p")) {
+					String regex = "^\\/p\\\"(.*?)\\\"";
+					
+					Pattern p = Pattern.compile(regex);
+					Matcher m = p.matcher(linha);
+					
+					linha = linha.replaceAll(regex, "");
+					
+					while (m.find()) {
+						sendToOne(m.group(1), saida," sussurou para você: ",linha);
+					}
+				} else {
+					sendToAll(saida,": ",linha);
+				}
 				recordLog(linha);
 				linha = entrada.readLine();
 			}
 			sendToAll(saida," saiu "," do Chat!");
-			clientes.remove(saida);
+			clientes.remove(meuNome);
 			conexao.close();
 		} catch (IOException e) {
 			Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, e);
 		}
 	}
 
-	private void sendToAll(PrintStream saida, String acao, String linha) throws IOException {
-		@SuppressWarnings("rawtypes")
-		Enumeration e = clientes.elements();		
-		while (e.hasMoreElements()) {
-			PrintStream chat = (PrintStream) e.nextElement();
+	private void sendToAll(PrintStream saida, String acao, String linha) throws IOException {		
+		for (String key : clientes.keySet()) {
+			PrintStream chat = (PrintStream) clientes.get(key);
 			if (chat != saida) {
 				chat.println(meuNome + acao + linha);
 			}
@@ -82,6 +92,17 @@ public class Servidor extends Thread {
 				if (chat == saida)
 					chat.println("");
 			}
+    	}
+	}
+	
+	private void sendToOne(String targetName, PrintStream saida, String acao, String linha) {		
+		PrintStream chat = clientes.get(targetName);
+		if (chat != saida) {
+			chat.println(meuNome + acao + linha);
+		}
+		if (acao.equals(" saiu ")) {
+			if (chat == saida)
+				chat.println("");
 		}
 	}
 	
