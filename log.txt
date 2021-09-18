@@ -1,2 +1,2 @@
-<kubernetes.docker.internal>@</127.0.0.1>@<62690>@<asd
-<kubernetes.docker.internal>@</127.0.0.1>@<62690>@<mensagem
+<kubernetes.docker.internal>@</127.0.0.1>@<56570>@<ola
+

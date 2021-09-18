@@ -3,10 +3,12 @@ package chat;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -20,6 +22,7 @@ public class Servidor extends Thread {
 	private Socket conexao;
 	private String meuNome;
 	static PrintWriter gravarArq;
+	private boolean firstLogin = true;
 	
 	public Servidor(Socket s){
 		conexao = s;
@@ -55,8 +58,17 @@ public class Servidor extends Thread {
 				return;
 			}
 			clientes.put(meuNome, saida);
-			String linha = entrada.readLine();
-			while ((linha != null) && (!linha.trim().equals(""))){
+			String linha = "----";
+			do {
+				if(firstLogin) {
+					firstLogin = false;
+					String nomeCompleto = " /s";
+					for (String key : clientes.keySet()) {
+						nomeCompleto += key + ",";
+			    	}					
+					trueSendToAll(saida," entrou no chat ", nomeCompleto);
+					linha = entrada.readLine();
+				}
 				if(linha.startsWith("/p")) {
 					String regex = "^\\/p\\\"(.*?)\\\"";
 					
@@ -73,13 +85,25 @@ public class Servidor extends Thread {
 				}
 				recordLog(linha);
 				linha = entrada.readLine();
-			}
+			} while ((linha != null) && (!linha.trim().equals("")));
+			
 			sendToAll(saida," saiu "," do Chat!");
 			clientes.remove(meuNome);
 			conexao.close();
 		} catch (IOException e) {
 			Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, e);
 		}
+	}
+	
+	private void trueSendToAll(PrintStream saida, String acao, String linha) throws IOException {		
+		for (String key : clientes.keySet()) {
+			PrintStream chat = (PrintStream) clientes.get(key);
+			chat.println(meuNome + acao + linha);
+			if (acao.equals(" saiu ")) {
+				if (chat == saida)
+					chat.println("");
+			}
+    	}
 	}
 
 	private void sendToAll(PrintStream saida, String acao, String linha) throws IOException {		
@@ -95,7 +119,7 @@ public class Servidor extends Thread {
     	}
 	}
 	
-	private void sendToOne(String targetName, PrintStream saida, String acao, String linha) {		
+	private void sendToOne(String targetName, PrintStream saida, String acao, String linha) {
 		PrintStream chat = clientes.get(targetName);
 		if (chat != saida) {
 			chat.println(meuNome + acao + linha);
