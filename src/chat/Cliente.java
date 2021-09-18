@@ -33,7 +33,6 @@ public class Cliente extends Thread {
 	private static JTextArea chat;
 	private static PrintStream saida;
 	private static String nome;
-//	private static String[] conectados = {""};
 	private static List<String> conectados = new ArrayList<>();
 	private static JComboBox conectadosCombo = new JComboBox(conectados.toArray());
 
@@ -89,7 +88,7 @@ public class Cliente extends Thread {
 	        chat = new JTextArea();
 	        JScrollPane scroll = new JScrollPane(chat);
 
-	        // Adiciona o chat e o os botıes de aÁ„o
+	        // Adiciona o chat e o os bot√µes de a√ß√£o
 	        frame.getContentPane().add(scroll, BorderLayout.CENTER);
 	        frame.getContentPane().add(panelPrincipal, BorderLayout.PAGE_END);
 	        frame.setVisible(true);
@@ -132,7 +131,6 @@ public class Cliente extends Thread {
 					conectadosCombo.addItem("");
 					for (String nome : newLine[1].split(",")) {
 						conectadosCombo.addItem(nome);
-						conectados.add(nome);
 					}
 					linha = newLine[0];
 				}
