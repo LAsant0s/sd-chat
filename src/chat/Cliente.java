@@ -1,13 +1,27 @@
 package chat;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
-import java.net.*;
-import javax.swing.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 public class Cliente extends Thread {
@@ -18,6 +32,9 @@ public class Cliente extends Thread {
 	private static JTextArea chat;
 	private static PrintStream saida;
 	private static String nome;
+//	private static String[] conectados = {""};
+	private static List<String> conectados = new ArrayList<>();
+	private static JComboBox conectadosCombo = new JComboBox(conectados.toArray());
 
 	private Socket conexao;
 	
@@ -44,12 +61,10 @@ public class Cliente extends Thread {
 			painelConectados.setLayout(new BorderLayout(10, 10));
 			painelConectados.setBorder(new EmptyBorder(10, 10, 10, 10));
 	        
-	        String[] conectados = { "", "Elian", "Henrique", "Luan", "Cleiton" };
-	        @SuppressWarnings({ "rawtypes", "unchecked" })
-			JComboBox conectadosCombo = new JComboBox(conectados);
 	        JLabel conectadosLabel = new JLabel("Conectados:", JLabel.TRAILING);
+	        conectadosCombo.addItem("");
 	        conectadosLabel.setLabelFor(conectadosCombo);
-	        
+	   
 	        painelConectados.add(conectadosLabel, BorderLayout.WEST);
 	        painelConectados.add(conectadosCombo, BorderLayout.CENTER);
 
@@ -103,17 +118,24 @@ public class Cliente extends Thread {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void run(){
 		try {
 			BufferedReader entrada = new BufferedReader(new InputStreamReader(conexao.getInputStream()));
 			String linha;
 			while (true) {
 				linha = entrada.readLine();
+				if(linha.contains("/s")) {
+					String newLine = linha.replace("/s", "").split(" ")[0];
+					conectados.add(newLine);
+					conectadosCombo.addItem(newLine);
+				}
 				if (linha.trim().equals("")) {
 					System.out.println("Conexao encerrada!!!");
 					break;
 				}
 				if(linha != null) {
+					
 					writeChatFromServer(linha);
 				}
 			}

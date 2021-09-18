@@ -3,10 +3,12 @@ package chat;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -20,6 +22,7 @@ public class Servidor extends Thread {
 	private Socket conexao;
 	private String meuNome;
 	static PrintWriter gravarArq;
+	private boolean firstLogin = true;
 	
 	public Servidor(Socket s){
 		conexao = s;
@@ -55,8 +58,30 @@ public class Servidor extends Thread {
 				return;
 			}
 			clientes.put(meuNome, saida);
-			String linha = entrada.readLine();
-			while ((linha != null) && (!linha.trim().equals(""))){
+			String linha = "";
+//			while ((linha != null) && (!linha.trim().equals(""))){
+//				if(linha.startsWith("/p")) {
+//					String regex = "^\\/p\\\"(.*?)\\\"";
+//					
+//					Pattern p = Pattern.compile(regex);
+//					Matcher m = p.matcher(linha);
+//					
+//					linha = linha.replaceAll(regex, "");
+//					
+//					while (m.find()) {
+//						sendToOne(m.group(1), saida," sussurou para você: ",linha);
+//					}
+//				} else {
+//					sendToAll(saida,": ",linha);
+//				}
+//				recordLog(linha);
+//				linha = entrada.readLine();
+//			}
+			do {
+				if(firstLogin) {
+					sendToAll(saida," entrou no chat ", "/s");
+					linha = entrada.readLine();
+				}
 				if(linha.startsWith("/p")) {
 					String regex = "^\\/p\\\"(.*?)\\\"";
 					
@@ -72,8 +97,10 @@ public class Servidor extends Thread {
 					sendToAll(saida,": ",linha);
 				}
 				recordLog(linha);
+				firstLogin = false;
 				linha = entrada.readLine();
-			}
+			} while ((linha != null) && (!linha.trim().equals("")));
+			
 			sendToAll(saida," saiu "," do Chat!");
 			clientes.remove(meuNome);
 			conexao.close();
@@ -95,8 +122,11 @@ public class Servidor extends Thread {
     	}
 	}
 	
-	private void sendToOne(String targetName, PrintStream saida, String acao, String linha) {		
+	private void sendToOne(String targetName, PrintStream saida, String acao, String linha) {
 		PrintStream chat = clientes.get(targetName);
+		if(linha.equals("/s") && chat != saida) {
+			chat.println(linha + meuNome + acao);
+		}
 		if (chat != saida) {
 			chat.println(meuNome + acao + linha);
 		}
