@@ -58,28 +58,15 @@ public class Servidor extends Thread {
 				return;
 			}
 			clientes.put(meuNome, saida);
-			String linha = "";
-//			while ((linha != null) && (!linha.trim().equals(""))){
-//				if(linha.startsWith("/p")) {
-//					String regex = "^\\/p\\\"(.*?)\\\"";
-//					
-//					Pattern p = Pattern.compile(regex);
-//					Matcher m = p.matcher(linha);
-//					
-//					linha = linha.replaceAll(regex, "");
-//					
-//					while (m.find()) {
-//						sendToOne(m.group(1), saida," sussurou para você: ",linha);
-//					}
-//				} else {
-//					sendToAll(saida,": ",linha);
-//				}
-//				recordLog(linha);
-//				linha = entrada.readLine();
-//			}
+			String linha = "----";
 			do {
 				if(firstLogin) {
-					sendToAll(saida," entrou no chat ", "/s");
+					firstLogin = false;
+					String nomeCompleto = " /s";
+					for (String key : clientes.keySet()) {
+						nomeCompleto += key + ",";
+			    	}					
+					trueSendToAll(saida," entrou no chat ", nomeCompleto);
 					linha = entrada.readLine();
 				}
 				if(linha.startsWith("/p")) {
@@ -97,7 +84,6 @@ public class Servidor extends Thread {
 					sendToAll(saida,": ",linha);
 				}
 				recordLog(linha);
-				firstLogin = false;
 				linha = entrada.readLine();
 			} while ((linha != null) && (!linha.trim().equals("")));
 			
@@ -107,6 +93,17 @@ public class Servidor extends Thread {
 		} catch (IOException e) {
 			Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, e);
 		}
+	}
+	
+	private void trueSendToAll(PrintStream saida, String acao, String linha) throws IOException {		
+		for (String key : clientes.keySet()) {
+			PrintStream chat = (PrintStream) clientes.get(key);
+			chat.println(meuNome + acao + linha);
+			if (acao.equals(" saiu ")) {
+				if (chat == saida)
+					chat.println("");
+			}
+    	}
 	}
 
 	private void sendToAll(PrintStream saida, String acao, String linha) throws IOException {		
@@ -124,9 +121,6 @@ public class Servidor extends Thread {
 	
 	private void sendToOne(String targetName, PrintStream saida, String acao, String linha) {
 		PrintStream chat = clientes.get(targetName);
-		if(linha.equals("/s") && chat != saida) {
-			chat.println(linha + meuNome + acao);
-		}
 		if (chat != saida) {
 			chat.println(meuNome + acao + linha);
 		}

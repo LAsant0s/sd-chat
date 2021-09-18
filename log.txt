@@ -1,3 +1,2 @@
-<kubernetes.docker.internal>@</127.0.0.1>@<62083>@<eae povo
-<kubernetes.docker.internal>@</127.0.0.1>@<62084>@<Luan mo otario
-<kubernetes.docker.internal>@</127.0.0.1>@<62083>@<Eu vi isso seus porra
+<kubernetes.docker.internal>@</127.0.0.1>@<56570>@<ola
+

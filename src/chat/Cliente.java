@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -126,16 +127,20 @@ public class Cliente extends Thread {
 			while (true) {
 				linha = entrada.readLine();
 				if(linha.contains("/s")) {
-					String newLine = linha.replace("/s", "").split(" ")[0];
-					conectados.add(newLine);
-					conectadosCombo.addItem(newLine);
+					String[] newLine = linha.split("/s");
+					conectadosCombo.removeAllItems();
+					conectadosCombo.addItem("");
+					for (String nome : newLine[1].split(",")) {
+						conectadosCombo.addItem(nome);
+						conectados.add(nome);
+					}
+					linha = newLine[0];
 				}
 				if (linha.trim().equals("")) {
 					System.out.println("Conexao encerrada!!!");
 					break;
 				}
 				if(linha != null) {
-					
 					writeChatFromServer(linha);
 				}
 			}
